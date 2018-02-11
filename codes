@@ -1,0 +1,67 @@
+import numpy as np
+#np.set_printoptions(threshold=np.inf)
+import cv2
+import os
+import math			
+
+
+class LBP():
+    #intiate the class. load the pic
+    def __init__(self):
+        self.loadresource()
+    #load pic function   
+    def loadresource(self):
+        self.img=cv2.imread('1.jpg',0)
+        print ('img1:','\n',self.img)
+    #create matrix of lbp value
+    def piclbp(self):
+        #pic size
+        self.Ro,self.Co=self.img.shape
+        #show the original pic_apple
+        cv2.namedWindow("Image_cr")
+        cv2.imshow("Image_cr",self.img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        #define the imglbp szie,remove the most outward pixels
+        self.abclbp=np.empty((self.Ro-2,self.Co-2))
+        print ('img2:','\n',self.img)
+        #the matrix below could dot-multi with eight-bit vector, to get all kinds of rotation value
+        BYTE=np.array([
+            [128.0, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0] ,
+            [64.0, 128.0, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0] ,
+            [32.0, 64.0, 128.0, 1.0, 2.0, 4.0, 8.0, 16.0] ,
+            [16.0, 32.0, 64.0, 128.0, 1.0, 2.0, 4.0, 8.0] ,
+            [8.0, 16.0, 32.0, 64.0, 128.0, 1.0, 2.0, 4.0] ,
+            [4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 1.0, 2.0] ,
+            [2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 1.0] ,
+            [1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0] ,])
+
+        #initiate the lbp matrxi, remove the most outward pixels
+        k=0
+        for i in range(1,self.Ro-2):
+            for j in range(1,self.Co-2):
+                #slice to create a 3x3 matrix, calculate the boolean value
+                #convert boolean into int
+                m1=self.img[i-1:i+2,j-1:j+2]>self.img[i,j]
+                m2=m1.astype(int)
+                #print ('imgfor2:','\n',self.img[1:20,1:18])
+                #create a list, to unfold the matrix into a  vector
+                L=[]
+                for x in range(0,3):
+                    for y in range(0,3):
+                        L.append(m2[x,y])
+                #remove the center pixel, to get a eight-bit vector
+                L.pop(4)
+                #vector dot-multi with the matrix, get the min, take into imgibp
+                #print ('imgfor3:','\n',self.img[1:20,1:18])
+                self.abclbp[i,j]=255-np.dot(L,BYTE).min()
+        print ('lbp:','\n',self.abclbp)
+        #show the lbp pic
+        cv2.namedWindow("Image_g")
+        cv2.imshow("Image_g",self.abclbp)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+    apple=LBP()
+    apple.piclbp()
